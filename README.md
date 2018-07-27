@@ -8,8 +8,7 @@
 ```
  recyclerView.setUp(users, R.layout.item_layout, { holder, item ->
             var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
-            binding?.nameText?.text = item.name
-            binding?.surNameText?.text = item.surname
+            ....
         })
   ```
   
@@ -19,16 +18,13 @@
                 listItems = *arrayOf(
                         ListItem(R.layout.item_layout, { holder, item ->
                             var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
-                            binding?.nameText?.text = item.name
-                            binding?.surNameText?.text = item.surname
+                            ...
                         }, {
                             Snackbar.make(window.decorView, it.name, Snackbar.LENGTH_SHORT).show()
                         }),
                         ListItem(R.layout.item_layout2, { holder, item ->
                             var nameText: TextView = holder.getView(R.id.nameText)
-                            var surNameText: TextView = holder.getView(R.id.surNameText)
-                            nameText.text = item.name
-                            surNameText.text = item.surname
+                            ...
                         }, {
 
                         })
