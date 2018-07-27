@@ -5,16 +5,16 @@
 使用示例
 
 1.单ViewType
-
+```
  recyclerView.setUp(users, R.layout.item_layout, { holder, item ->
             var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
             binding?.nameText?.text = item.name
             binding?.surNameText?.text = item.surname
         })
-  
+  ```
   
   2.多ViewType
-  
+  ```
   recyclerView.setUP(users,
                 listItems = *arrayOf(
                         ListItem(R.layout.item_layout, { holder, item ->
@@ -33,7 +33,7 @@
 
                         })
                 ))
-                
+   ```             
                 
    同时支持普通layout和DataBinding Layout
 
