@@ -33,7 +33,9 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-//        recyclerView.setUp(users, R.layout.item_layout, { holder, item ->
+//        recyclerView.setUp(users, R.layout.item_layout, initHolder = {
+//            println("init ${it.itemView}")
+//        }, bindHolder = { holder, item ->
 //            var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
 //            binding?.nameText?.text = item.name
 //            binding?.surNameText?.text = item.surname
@@ -41,19 +43,24 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView.setUP(users,
                 listItems = *arrayOf(
-                        ListItem(R.layout.item_layout, { holder, item ->
+                        ListItem(R.layout.item_layout, initHolder = {
+                            println("init holder 1")
+                        }, bindHolder = { holder, item ->
+
                             var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
                             binding?.nameText?.text = item.name
                             binding?.surNameText?.text = item.surname
-                        }, {
+                        }, itemClick = {
                             Snackbar.make(window.decorView, it.name, Snackbar.LENGTH_SHORT).show()
                         }),
-                        ListItem(R.layout.item_layout2, { holder, item ->
+                        ListItem(R.layout.item_layout2, initHolder = {
+                            println("init holder 2")
+                        }, bindHolder = { holder, item ->
                             var nameText: TextView = holder.getView(R.id.nameText)
                             var surNameText: TextView = holder.getView(R.id.surNameText)
                             nameText.text = item.name
                             surNameText.text = item.surname
-                        }, {
+                        }, itemClick = {
 
                         })
                 ))

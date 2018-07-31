@@ -6,21 +6,25 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+
 /**
  * Created by hupihuai on 2018/7/27.
  */
 class SingleAdapter<ITEM>(items: List<ITEM>,
                           private val layoutResId: Int,
-                          private val bindHolder: (Holder, ITEM) -> Unit)
-    : AbstractAdapter<ITEM>(items) {
+                          initHolder: (Holder, Int) -> Unit)
+    : AbstractAdapter<ITEM>(items, initHolder) {
 
     private var itemClick: (ITEM) -> Unit = {}
+    private lateinit var bindHolder: (Holder, ITEM) -> Unit
 
     constructor(items: List<ITEM>,
                 layoutResId: Int,
+                initHolder: (AbstractAdapter.Holder, Int) -> Unit,
                 bindHolder: (Holder, ITEM) -> Unit,
-                itemClick: (ITEM) -> Unit = {}) : this(items, layoutResId, bindHolder) {
+                itemClick: (ITEM) -> Unit = {}) : this(items, layoutResId, initHolder) {
         this.itemClick = itemClick
+        this.bindHolder = bindHolder
     }
 
     override fun createItemView(parent: ViewGroup, viewType: Int): View {
@@ -42,19 +46,23 @@ class SingleAdapter<ITEM>(items: List<ITEM>,
 
 
 class MultiAdapter<ITEM : ListItemI>(private val items: List<ITEM>,
-                                     private val bindHolder: (Holder, ITEM) -> Unit)
-    : AbstractAdapter<ITEM>(items) {
+                                     initHolder: (Holder, Int) -> Unit)
+    : AbstractAdapter<ITEM>(items, initHolder) {
 
     private var itemClick: (ITEM) -> Unit = {}
+    private lateinit var bindHolder: (Holder, ITEM) -> Unit
     private lateinit var listItems: Array<out ListItem<ITEM>>
 
     constructor(items: List<ITEM>,
                 listItems: Array<out ListItem<ITEM>>,
+                initHolder: (Holder, Int) -> Unit,
                 bindHolder: (Holder, ITEM) -> Unit,
-                itemClick: (ITEM) -> Unit = {}) : this(items, bindHolder) {
+                itemClick: (ITEM) -> Unit = {}) : this(items, initHolder) {
         this.itemClick = itemClick
         this.listItems = listItems
+        this.bindHolder = bindHolder
     }
+
 
     override fun createItemView(parent: ViewGroup, viewType: Int): View {
         var view = parent inflate getLayoutId(viewType)
@@ -91,11 +99,15 @@ class MultiAdapter<ITEM : ListItemI>(private val items: List<ITEM>,
 
 fun <ITEM> RecyclerView.setUp(items: List<ITEM>,
                               layoutResId: Int,
+                              manager: RecyclerView.LayoutManager = LinearLayoutManager(this.context),
+                              initHolder: (AbstractAdapter.Holder) -> Unit = {},
                               bindHolder: (AbstractAdapter.Holder, ITEM) -> Unit,
-                              itemClick: (ITEM) -> Unit = {},
-                              manager: RecyclerView.LayoutManager = LinearLayoutManager(this.context)): AbstractAdapter<ITEM> {
+                              itemClick: (ITEM) -> Unit = {}
+): AbstractAdapter<ITEM> {
     val singleAdapter by lazy {
-        SingleAdapter(items, layoutResId, { holder, item ->
+        SingleAdapter(items, layoutResId, { holder, _ ->
+            initHolder(holder)
+        }, { holder, item ->
             bindHolder(holder, item)
         }, {
             itemClick(it)
@@ -112,11 +124,14 @@ fun <ITEM : ListItemI> RecyclerView.setUP(items: List<ITEM>,
                                           vararg listItems: ListItem<ITEM>): AbstractAdapter<ITEM> {
 
     val multiAdapter by lazy {
-        MultiAdapter(items, listItems, { holder, item ->
-            var listItem: ListItem<ITEM>? = getListItem(listItems, item)
+        MultiAdapter(items, listItems, { holder, viewType ->
+            var listItem: ListItem<ITEM>? = getListItem(listItems, viewType)
+            listItem?.initHolder?.invoke(holder)
+        }, { holder, item ->
+            var listItem: ListItem<ITEM>? = getListItem(listItems, item.getType())
             listItem?.bindHolder?.invoke(holder, item)
         }, { item ->
-            var listItem: ListItem<ITEM>? = getListItem(listItems, item)
+            var listItem: ListItem<ITEM>? = getListItem(listItems, item.getType())
             listItem?.itemClick?.invoke(item)
         })
     }
@@ -125,10 +140,10 @@ fun <ITEM : ListItemI> RecyclerView.setUP(items: List<ITEM>,
     return multiAdapter
 }
 
-private fun <ITEM : ListItemI> getListItem(listItems: Array<out ListItem<ITEM>>, item: ITEM): ListItem<ITEM>? {
+private fun <ITEM : ListItemI> getListItem(listItems: Array<out ListItem<ITEM>>, type: Int): ListItem<ITEM>? {
     var listItem: ListItem<ITEM>? = null
     listItems.forEach {
-        if (it.layoutResId == item.getType()) {
+        if (it.layoutResId == type) {
             listItem = it
             return@forEach
         }
@@ -137,6 +152,7 @@ private fun <ITEM : ListItemI> getListItem(listItems: Array<out ListItem<ITEM>>,
 }
 
 class ListItem<ITEM>(val layoutResId: Int,
+                     val initHolder: (AbstractAdapter.Holder) -> Unit = {},
                      val bindHolder: (holder: AbstractAdapter.Holder, item: ITEM) -> Unit,
                      val itemClick: (item: ITEM) -> Unit = {})
 
