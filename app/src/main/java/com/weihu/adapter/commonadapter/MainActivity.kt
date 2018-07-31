@@ -21,54 +21,41 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         recyclerView = findViewById(R.id.recyclerView)
-        val users = listOf(User("A", "B", R.layout.item_layout),
-                User("A", "B", R.layout.item_layout2),
-                User("A", "B", R.layout.item_layout),
-                User("A", "B", R.layout.item_layout2),
-                User("A", "B", R.layout.item_layout),
-                User("A", "B", R.layout.item_layout2),
-                User("A", "B", R.layout.item_layout))
+        val users = listOf(User("A", "B"),
+                User("A", "B"),
+                User("A", "B"),
+                User("A", "B"),
+                User("A", "B"),
+                User("A", "B"),
+                User("A", "B"))
 
         val item: (AbstractAdapter.Holder, User) -> Unit = { holder, user ->
 
         }
+        var adaptedUsers = users.mapIndexed { index, user -> ListItemAdapter(user, if (index % 2 == 0) R.layout.item_layout else R.layout.item_layout2) }
+        recyclerView.setUp(adaptedUsers, R.layout.item_layout, bindHolder = { holder, item ->
+            var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
+            binding?.nameText?.text = item.data.name
+            binding?.surNameText?.text = item.data.surname
+        })
 
-//        recyclerView.setUp(users, R.layout.item_layout, initHolder = {
-//            println("init ${it.itemView}")
-//        }, bindHolder = { holder, item ->
-//            var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
-//            binding?.nameText?.text = item.name
-//            binding?.surNameText?.text = item.surname
-//        })
+        recyclerView.setUP(adaptedUsers,
+                ListItem(R.layout.item_layout, { holder, item ->
+                    var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
+                    binding?.nameText?.text = item.data.name
+                    binding?.surNameText?.text = item.data.surname
+                }, {
+                    Snackbar.make(window.decorView, it.data.name, Snackbar.LENGTH_SHORT).show()
+                }),
+                ListItem(R.layout.item_layout2, { holder, item ->
+                    var nameText: TextView = holder.getView(R.id.nameText)
+                    var surNameText: TextView = holder.getView(R.id.surNameText)
+                    nameText.text = item.data.name
+                    surNameText.text = item.data.surname
+                }, {
 
-        recyclerView.setUP(users,
-                listItems = *arrayOf(
-                        ListItem(R.layout.item_layout, initHolder = {
-                            println("init holder 1")
-                        }, bindHolder = { holder, item ->
-
-                            var binding = DataBindingUtil.getBinding<ItemLayoutBinding>(holder.itemView)
-                            binding?.nameText?.text = item.name
-                            binding?.surNameText?.text = item.surname
-                        }, itemClick = {
-                            Snackbar.make(window.decorView, it.name, Snackbar.LENGTH_SHORT).show()
-                        }),
-                        ListItem(R.layout.item_layout2, initHolder = {
-                            println("init holder 2")
-                        }, bindHolder = { holder, item ->
-                            var nameText: TextView = holder.getView(R.id.nameText)
-                            var surNameText: TextView = holder.getView(R.id.surNameText)
-                            nameText.text = item.name
-                            surNameText.text = item.surname
-                        }, itemClick = {
-
-                        })
-                ))
+                }))
     }
 }
 
-class User(val name: String, val surname: String, private val itemType: Int) : ListItemI {
-    override fun getType(): Int {
-        return itemType
-    }
-}
+class User(val name: String, val surname: String)

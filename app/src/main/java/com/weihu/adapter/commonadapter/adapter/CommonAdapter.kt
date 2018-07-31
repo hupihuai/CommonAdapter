@@ -99,10 +99,10 @@ class MultiAdapter<ITEM : ListItemI>(private val items: List<ITEM>,
 
 fun <ITEM> RecyclerView.setUp(items: List<ITEM>,
                               layoutResId: Int,
-                              manager: RecyclerView.LayoutManager = LinearLayoutManager(this.context),
                               initHolder: (AbstractAdapter.Holder) -> Unit = {},
                               bindHolder: (AbstractAdapter.Holder, ITEM) -> Unit,
-                              itemClick: (ITEM) -> Unit = {}
+                              itemClick: (ITEM) -> Unit = {},
+                              manager: RecyclerView.LayoutManager = LinearLayoutManager(this.context)
 ): AbstractAdapter<ITEM> {
     val singleAdapter by lazy {
         SingleAdapter(items, layoutResId, { holder, _ ->
@@ -120,8 +120,9 @@ fun <ITEM> RecyclerView.setUp(items: List<ITEM>,
 
 
 fun <ITEM : ListItemI> RecyclerView.setUP(items: List<ITEM>,
-                                          manager: RecyclerView.LayoutManager = LinearLayoutManager(this.context),
-                                          vararg listItems: ListItem<ITEM>): AbstractAdapter<ITEM> {
+                                          vararg listItems: ListItem<ITEM>,
+                                          manager: RecyclerView.LayoutManager = LinearLayoutManager(this.context)
+): AbstractAdapter<ITEM> {
 
     val multiAdapter by lazy {
         MultiAdapter(items, listItems, { holder, viewType ->
@@ -152,11 +153,19 @@ private fun <ITEM : ListItemI> getListItem(listItems: Array<out ListItem<ITEM>>,
 }
 
 class ListItem<ITEM>(val layoutResId: Int,
-                     val initHolder: (AbstractAdapter.Holder) -> Unit = {},
                      val bindHolder: (holder: AbstractAdapter.Holder, item: ITEM) -> Unit,
-                     val itemClick: (item: ITEM) -> Unit = {})
+                     val itemClick: (item: ITEM) -> Unit = {},
+                     val initHolder: (AbstractAdapter.Holder) -> Unit = {}
+)
 
 
 interface ListItemI {
     fun getType(): Int
+}
+
+class ListItemAdapter<ITEM>(var data: ITEM, private val viewType: Int) : ListItemI {
+
+    override fun getType(): Int {
+        return viewType
+    }
 }
